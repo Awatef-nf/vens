@@ -43,6 +43,37 @@ They answer different questions. vexllm answers "should I hide this CVE?"; Vens 
 
 ---
 
+## SSVC
+[Stakeholder-Specific Vulnerability Categorization (SSVC)](https://www.cisa.gov/resources-tools/resources/stakeholder-specific-vulnerability-categorization-ssvc)
+is a free, standardised decision framework. It prioritises a vulnerability
+from a small set of questions about factors such as exploitation, exposure
+and mission impact, and returns an action (Track, Track*, Attend or Act).
+It needs no AI or ML model, and every decision can be explained.
+
+- **Use SSVC when** you want a structured, explainable process and have an
+analyst available to answer the decision questions for each vulnerability.
+- **Use vens when** a scan produces hundreds of CVEs and you want
+prioritisation to come from a context file written once, rather than a
+human assessment of every finding.
+
+The difference is how they scale: SSVC scales with analyst time, vens
+scales with the scan. They can be complementary: after vens has reduced
+a large backlog to a manageable set, SSVC can structure the human review
+of the findings that remain.
+
+---
+
+## CVE Prioritizer
+[CVE_Prioritizer](https://github.com/TURROKS/CVE_Prioritizer/blob/main/README.md) combines
+CVSS, EPSS and KEV signals to prioritise vulnerabilities, with no
+organisation-specific context to maintain.
+- **Use CVE_Prioritizer when** you want a lightweight ranking based on
+established severity and exploitation signals.
+- **Use vens when** generic signals are not enough and the priority
+should reflect the specific context of the system being assessed.
+
+---
+
 ## Vulnerability management platforms
 
 **[Dependency-Track](https://dependencytrack.org/)** — an SBOM/vulnerability platform. It ingests SBOMs, tracks CVEs over time, can ingest VEX documents (including the CycloneDX VEX files Vens produces), and provides dashboards and policy.
@@ -54,7 +85,6 @@ They answer different questions. vexllm answers "should I hide this CVE?"; Vens 
 ---
 
 ## Scanner-native `--vex` support
-
 Trivy and Grype both accept `--vex <file>` on the command line. They use it to apply `not_affected` states from an OpenVEX document onto the scanner output.
 
 - **This is complementary to Vens**, not an alternative. It is also not the way to read Vens' output back: Vens emits a CycloneDX VEX with OWASP ratings and no `analysis` state, so `--vex` has nothing to apply. Use `vens enrich` on the Trivy JSON, or Dependency-Track 5.1+. See [Prioritize a CVE backlog → Step 5](../guides/prioritize-cves.md#step-5-feed-the-scores-back-to-your-tools).
@@ -75,22 +105,31 @@ Vens scores will improve if you paste the conclusions of a reachability scan int
 ## So where does Vens sit?
 
 ```
-     ┌──── Reachability analysis (Semgrep, Snyk, …)
-     │     "Is this code actually executed?"
+     ┌─── Reachability analysis (Semgrep, Snyk, …)
+     │    "Is this code actually executed?"
      │
-     │     ┌── Vens
-Scanner ───┤   "How much does this CVE actually cost me given my context?"
-(Trivy,    │
-Grype,     │     ┌── vexllm
-…)         │     │  "Should I hide this CVE?"
-     │     │     └── vexctl
-     │     │         "Assert status per CVE, by a human, signed"
-     │     │
-     │     └── Dependency-Track, OpenCVE, DefectDojo, …
-     │         "Track CVEs over time, run policy, aggregate reports"
-     │
-     └── CVSS, EPSS
-         "What's the generic severity / exploit probability?"
+     │    ┌── Vens
+Scanner ├──┤   "How much does this CVE actually cost me given my context?"
+(Trivy, │
+Grype,  │    ┌── CVE_Prioritizer
+…)      │    │   "What is the generic priority from CVSS, EPSS and KEV?"
+        │    │
+        │    ├── SSVC
+        │    │   "What action should I take based on exploitation,
+        │    │    exposure and mission impact?"
+        │    │
+        │    ├── vexllm
+        │    │   "Can this vulnerability be classified as not affecting
+        │    │    the product?"
+        │    │
+        │    ├── vexctl
+        │    │   "Assert and sign the status of a vulnerability"
+        │    │
+        │    └── Dependency-Track, OpenCVE, DefectDojo, …
+        │        "Track CVEs over time, run policy, aggregate reports"
+        │
+        └── CVSS, EPSS
+            "What's the generic severity / exploit probability?"
 ```
 
 Vens is the arrow that turns *one* scanner run into a ranked, contextual priority list — nothing more, nothing less.
