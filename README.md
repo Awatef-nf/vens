@@ -186,6 +186,8 @@ Quick start for contributors:
 
 Apache License 2.0 - See [LICENSE](LICENSE)
 
+The photos in [`docs/assets/talks/`](docs/assets/talks/) are used with permission and are not covered by this licence.
+
 ---
 
 **Focus on what matters. Patch smarter, not harder.**
