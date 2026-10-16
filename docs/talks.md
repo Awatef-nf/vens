@@ -44,7 +44,5 @@ Where vens has been presented, and where it is going next.
 
 </div>
 
-<small>Photo: Jean-Baptiste Poggi</small>
-
-<small>Used with permission, not covered by the vens Apache-2.0 licence.</small>
+<small>Photos: Jean-Baptiste Poggi, not covered by the vens Apache-2.0 licence.</small>
 
